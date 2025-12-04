@@ -8,7 +8,7 @@ Install required packages: pip install -r requirements.txt
 
 To train the models:
 
-Navigate the source code folder: cd src
+Navigate to the source code folder: cd src
 
 Retrieve and preprocess the data: python3 data_preprocessing.py
 
