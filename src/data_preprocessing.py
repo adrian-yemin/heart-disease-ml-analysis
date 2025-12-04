@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.impute import SimpleImputer
@@ -9,12 +10,15 @@ from ucimlrepo import fetch_ucirepo
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
 def load_preprocess_save_data():
+    """Loads the Cleveland Heart Disease dataset from UCI repository, preprocesses it, and saves it as PyTorch DataLoader objects."""
     heart = fetch_ucirepo(id=45)
 
     X = heart.data.features
-    y = heart.data.targets
+    y = heart.data.targets.copy()
+    y["num"] = (y["num"] > 0).astype(int)
 
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
@@ -44,19 +48,10 @@ def load_preprocess_save_data():
     X_train = X_train.astype(float)
     X_val = X_val.astype(float)
 
-    X_train_tensor = torch.tensor(X_train.values, dtype=torch.float32)
-    y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)
-
-    X_val_tensor = torch.tensor(X_val.values, dtype=torch.float32)
-    y_val_tensor = torch.tensor(y_val.values, dtype=torch.long)
-
-    train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-    val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
-
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=32)
-    torch.save(train_loader, DATA_DIR / "train_loader.pt")
-    torch.save(val_loader, DATA_DIR / "val_loader.pt")
+    np.save(DATA_DIR / "X_train.npy", X_train.values)
+    np.save(DATA_DIR / "X_val.npy", X_val.values)
+    np.save(DATA_DIR / "y_train.npy", y_train.values.reshape(-1))
+    np.save(DATA_DIR / "y_val.npy", y_val.values.reshape(-1))
 
 if __name__ == "__main__":
     load_preprocess_save_data()
